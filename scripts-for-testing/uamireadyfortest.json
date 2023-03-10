@@ -1,0 +1,185 @@
+{
+ "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+ "contentVersion": "1.0.0.0",
+ "parameters": {
+  "mspOfferName": {
+   "type": "string",
+   "metadata": {
+    "description": "Specify a unique name for your offer"
+   },
+   "defaultValue": "MicroAge Azure Managed Services (Managed Services)"
+  },
+  "mspOfferDescription": {
+   "type": "string",
+   "metadata": {
+    "description": "Name of the Managed Service Provider offering"
+   },
+   "defaultValue": ""
+  },
+  "uamiRGName": {
+    "type": "string",
+    "defaultValue": "masvc-lighthouseuami-RG"
+  },
+  "location": {
+    "type": "string",
+    "defaultValue": "eastus2"
+  },
+  "roleDefinitionID": {
+    "type": "string",
+    "defaultValue": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635"
+  }
+ },
+ "variables": {
+  "mspRegistrationName": "[guid(parameters('mspOfferName'))]",
+  "mspAssignmentName": "[guid(parameters('mspOfferName'))]",
+  "managedByTenantId": "53ea3245-f119-4661-b317-75e61431da1c",
+  "authorizations": [
+   {
+    "principalId": "72a5e078-f4c9-475c-b576-8e97cf19ee38",
+    "roleDefinitionId": "91c1777a-f3dc-4fae-b103-61d183457e46",
+    "principalIdDisplayName": "MicroAge Services - RegistrationAssignmentDeleteRole"
+   },
+   {
+    "principalId": "4049982e-f88f-48de-ba90-034b323448dc",
+    "roleDefinitionId": "437d2ced-4a38-4302-8479-ed2bcb43d090",
+    "principalIdDisplayName": "MicroAge Services Automation (Blueprint Operator)"
+   },
+   {
+    "principalId": "4049982e-f88f-48de-ba90-034b323448dc",
+    "roleDefinitionId": "b24988ac-6180-42a0-ab88-20f7382dd24c",
+    "principalIdDisplayName": "MicroAge Services Automation (Contributor)"
+   },
+   {
+    "principalId": "4049982e-f88f-48de-ba90-034b323448dc",
+    "roleDefinitionId": "f1a07417-d97a-45cb-824c-7a7467783830",
+    "principalIdDisplayName": "MicroAge Services Automation (Managed Identity Operator)"
+   },
+   {
+    "principalId": "999b460a-ae18-4136-8bac-080a8766bc76",
+    "roleDefinitionId": "acdd72a7-3385-48ef-bd42-f606fba81ae7",
+    "principalIdDisplayName": "MicroAge Services Support Team (Global Reader)"
+   }
+  ],
+  "eligibleAuthorizations": [
+   {
+    "justInTimeAccessPolicy": {
+     "multiFactorAuthProvider": "Azure",
+     "maximumActivationDuration": "PT8H",
+     "managedByTenantApprovers": []
+    },
+    "principalId": "d3cff0c4-8b60-4f81-8790-6390f142c981",
+    "principalIdDisplayName": "MicroAge Services Engineering (Contributor)",
+    "roleDefinitionId": "b24988ac-6180-42a0-ab88-20f7382dd24c"
+   }
+  ],
+  "roleAssignmentName": "[guid('uami', parameters('roleDefinitionID'))]"
+ },
+ "resources": [
+  {
+   "type": "Microsoft.ManagedServices/registrationDefinitions",
+   "apiVersion": "2020-02-01-preview",
+   "name": "[variables('mspRegistrationName')]",
+   "properties": {
+    "registrationDefinitionName": "[parameters('mspOfferName')]",
+    "description": "[parameters('mspOfferDescription')]",
+    "managedByTenantId": "[variables('managedByTenantId')]",
+    "authorizations": "[variables('authorizations')]",
+    "eligibleAuthorizations": "[variables('eligibleAuthorizations')]"
+   }
+  },
+  {
+   "type": "Microsoft.ManagedServices/registrationAssignments",
+   "apiVersion": "2020-02-01-preview",
+   "name": "[variables('mspAssignmentName')]",
+   "dependsOn": [
+    "[resourceId('Microsoft.ManagedServices/registrationDefinitions/', variables('mspRegistrationName'))]"
+   ],
+   "properties": {
+    "registrationDefinitionId": "[resourceId('Microsoft.ManagedServices/registrationDefinitions/', variables('mspRegistrationName'))]"
+   }
+  },
+  {
+    "type": "Microsoft.Resources/resourceGroups",
+    "apiVersion": "2022-09-01",
+    "name": "[parameters('uamiRGName')]",
+    "location": "[parameters('location')]"
+  },
+  {
+    "type": "Microsoft.Authorization/roleAssignments",
+    "apiVersion": "2022-04-01",
+    "name": "[variables('roleAssignmentName')]",
+    "properties": {
+      "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', parameters('roleDefinitionID'))]",
+      "principalId": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('uamiRGName')), 'Microsoft.Resources/deployments', 'uamiDeployModule'), '2020-10-01').outputs.principalId.value]",
+      "principalType": "ServicePrincipal"
+    },
+    "dependsOn": [
+      "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('uamiRGName')), 'Microsoft.Resources/deployments', 'uamiDeployModule')]"
+    ]
+  },
+  {
+    "type": "Microsoft.Resources/deployments",
+    "apiVersion": "2020-10-01",
+    "name": "uamiDeployModule",
+    "resourceGroup": "[parameters('uamiRGName')]",
+    "properties": {
+      "expressionEvaluationOptions": {
+        "scope": "Inner"
+      },
+      "mode": "Incremental",
+      "parameters": {
+        "location": {
+          "value": "[parameters('location')]"
+        }
+      },
+      "template": {
+        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+        "contentVersion": "1.0.0.0",
+        "metadata": {
+          "_generator": {
+            "name": "bicep",
+            "version": "0.14.85.62628",
+            "templateHash": "8550542346203935372"
+          }
+        },
+        "parameters": {
+          "location": {
+            "type": "string"
+          }
+        },
+        "resources": [
+          {
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "apiVersion": "2023-01-31",
+            "name": "microagelighthouseuami",
+            "location": "[parameters('location')]"
+          }
+        ],
+        "outputs": {
+          "principalId": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'microagelighthouseuami'), '2023-01-31').principalId]"
+          }
+        }
+      }
+    },
+    "dependsOn": [
+      "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('uamiRGName'))]"
+    ]
+  }
+ ],
+ "outputs": {
+  "mspOfferName": {
+   "type": "string",
+   "value": "[concat('Managed by', ' ', parameters('mspOfferName'))]"
+  },
+  "authorizations": {
+   "type": "array",
+   "value": "[variables('authorizations')]"
+  },
+  "eligibleAuthorizations": {
+   "type": "array",
+   "value": "[variables('eligibleAuthorizations')]"
+  }
+ }
+}
