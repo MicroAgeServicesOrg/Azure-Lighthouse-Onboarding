@@ -58,7 +58,15 @@
        "principalId": "999b460a-ae18-4136-8bac-080a8766bc76",
        "roleDefinitionId": "acdd72a7-3385-48ef-bd42-f606fba81ae7",
        "principalIdDisplayName": "MicroAge Services Support Team (Global Reader)"
-      }
+      },
+      {
+        "principalId": "5473e3d4-b95f-44c1-b745-2eb33c19779a",
+        "roleDefinitionId": "18d7d88d-d35e-4fb5-a5c3-7773c20a72d9",
+        "principalIdDisplayName": "MicroAge Services User Access Administrator",
+        "delegatedRoleDefinitionIds": [
+          "749f88d5-cbae-40b8-bcfc-e573ddc772fa"
+        ]
+       }
      ],
      "eligibleAuthorizations": [
       {
