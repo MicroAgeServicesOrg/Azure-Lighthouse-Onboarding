@@ -22,7 +22,7 @@
      },
      "location": {
        "type": "string",
-       "defaultValue": "eastus2"
+       "defaultValue": "westus2"
      },
      "roleDefinitionID": {
        "type": "string",
