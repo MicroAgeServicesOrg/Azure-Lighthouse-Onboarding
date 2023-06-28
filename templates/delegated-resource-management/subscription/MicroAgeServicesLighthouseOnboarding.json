@@ -65,7 +65,8 @@
         "principalIdDisplayName": "MicroAge Services User Access Administrator",
         "delegatedRoleDefinitionIds": [
           "b24988ac-6180-42a0-ab88-20f7382dd24c",
-          "92aaf0da-9dab-42b6-94a3-d43ce8d16293"
+          "92aaf0da-9dab-42b6-94a3-d43ce8d16293",
+          "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1"
         ]
        }
      ],
